@@ -1,10 +1,14 @@
 const path = require('path');
+const cookieParser = require('cookie-parser');
+const session =require('express-session');
+const SessionStore=require('express-session-sequelize')(session.Store); 
+const csrf = require('csurf');
+const flash = require('connect-flash');
 const sequelize = require('./util/database');
 const Product = require('./models/product');
 const User = require('./models/user');
 const Cart = require('./models/cart');
 const CartItem = require('./models/cart-item');
-
 const Order = require('./models/order');
 const OrderItem = require('./models/order-item');
 
@@ -14,8 +18,9 @@ const bodyParser = require('body-parser');
 
 const errorController = require('./controllers/error');
 
-
-
+const sequelizeSessionStore = new SessionStore({
+  db: sequelize,
+});
 
 const app = express();
 
@@ -24,25 +29,50 @@ app.set('views', 'views');
 
 const adminRoutes = require('./routes/admin');
 const shopRoutes = require('./routes/shop');
+const authRoutes = require('./routes/auth');
 const { Console } = require('console');
 
-
+const csrfProduction = csrf();
 app.use(bodyParser.urlencoded({ extended: false }));
 app.use(express.static(path.join(__dirname, 'public')));
 
+app.use(cookieParser());
+app.use(session({
+    secret: 'supersecret',
+    store: sequelizeSessionStore,
+    resave: false,
+    saveUninitialized : false , 
+}));
+
+app.use(csrfProduction);
+
+app.use(flash());
+
 app.use((req,res,next) =>{
-  User.findByPk(1).then(user =>{
-    
+  if(!req.session.user){
+    return next();
+  }
+  
+  User.findByPk(req.session.user.id).then(user =>{
     req.user =user;
-    console.log(req.user.id);
-    next();
+      next();
   }).catch(err =>{
     console.log(err);
   });
 })
 
+app.use((req, res, next) => {
+  res.locals.isAuthenticated = req.session.isLoggedIn;
+  res.locals.csrfToken = req.csrfToken();
+  if(req.user){
+  res.locals.user =req.user.name;
+  }
+  next();
+});
+
 app.use('/admin', adminRoutes);
 app.use(shopRoutes);
+app.use(authRoutes);
 
 app.use(errorController.get404);
 //relationship using sequalize
@@ -65,29 +95,13 @@ User.hasMany(Order);
 
 Order.belongsToMany(Product, {through : OrderItem});
 
-
 sequelize
 //.sync({ force: true })
   .sync()
   .then(result =>{
-    return User.findByPk(1);
-  })
-  .then(user =>{
-    if(!user){
-      return User.create({name:'mohan',email:'mohan0045@gmail.com'});
-    }else{
-      return user;
-    }    
-  })
-  .then(user => {
-     console.log("sequlize creating tables");
-    return user.createCart();
-    
-  }).then(cart =>{
     app.listen(4200);
   })
   .catch(err => {
     console.log(err);
   });
 
-//app.listen(3000);
