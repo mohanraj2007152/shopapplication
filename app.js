@@ -1,4 +1,8 @@
 const path = require('path');
+const cookieParser = require('cookie-parser');
+const session =require('express-session');
+const SessionStore=require('express-session-sequelize')(session.Store); 
+//const MySQLStore = require('connect-mssql-v2')(session);
 const sequelize = require('./util/database');
 const Product = require('./models/product');
 const User = require('./models/user');
@@ -15,7 +19,9 @@ const bodyParser = require('body-parser');
 const errorController = require('./controllers/error');
 
 
-
+const sequelizeSessionStore = new SessionStore({
+  db: sequelize,
+});
 
 const app = express();
 
@@ -24,18 +30,72 @@ app.set('views', 'views');
 
 const adminRoutes = require('./routes/admin');
 const shopRoutes = require('./routes/shop');
+const authRoutes = require('./routes/auth');
 const { Console } = require('console');
 
 
 app.use(bodyParser.urlencoded({ extended: false }));
 app.use(express.static(path.join(__dirname, 'public')));
 
+app.use(cookieParser());
+app.use(session({
+    secret: 'supersecret',
+    store: sequelizeSessionStore,
+    resave: false,
+    saveUninitialized : false , 
+}));
+
+
+// var options = {
+// 	//host: 'localhost',
+// 	//port: 3306,
+// 	user: 'root',
+//   password: 'root',
+//  // server:'DESKTOP-EFK517F',
+//   server: 'localhost',
+//   database: 'nodedb',
+//   //"options": {
+//     //"encrypt": true,
+//     //"enableArithAbort": true
+//     //},
+//   schema: {
+// 		tableName: 'sessions',
+// 		columnNames: {
+// 			sid: 'sid',
+// 			session: 'session',
+// 			expires: 'expires'
+// 		}
+// 	}
+// };
+
+// var sessionStore = new MySQLStore(options);
+
+// app.use(
+//   session({
+// 	//key: 'session_cookie_name',
+// 	secret: 'session_cookie_secret',
+// 	store: sessionStore,
+// 	resave: false,
+// 	saveUninitialized: false
+// })
+// );
+
+// app.use(session({
+//   store: new MSSQLStore(config), // options are optional
+//   secret: 'password'
+// }));
+
+//setting session
+//app.use(session({secret:'password', resave:false, saveUninitialized:false, store:}))
+
 app.use((req,res,next) =>{
-  User.findByPk(1).then(user =>{
-    
+  if(!req.session.user){
+    return next();
+  }
+  
+  User.findByPk(req.session.user.id).then(user =>{
     req.user =user;
-    console.log(req.user.id);
-    next();
+      next();
   }).catch(err =>{
     console.log(err);
   });
@@ -43,6 +103,7 @@ app.use((req,res,next) =>{
 
 app.use('/admin', adminRoutes);
 app.use(shopRoutes);
+app.use(authRoutes);
 
 app.use(errorController.get404);
 //relationship using sequalize

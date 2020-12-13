@@ -4,6 +4,7 @@ const uuid = require('uuid')
 
 exports.getAddProduct = (req, res, next) => {
   res.render('admin/edit-product', {
+    isAuthenticated: req.session.isLoggedIn,
     pageTitle: 'Add Product',
     path: '/admin/add-product',
     editing: false
@@ -31,49 +32,7 @@ exports.postAddProduct = (req, res, next) => {
    .catch(err => {
      console.log(err);
    });
-
-  // manully set the userid in create product 
-//     Product.create({
-//        title:title,
-//        price:price,
-//        imageUrl:imageUrl,
-//        description:description,
-//        userId : req.user.id
-//     }).then(result =>{
-//       console.log("product is created");
-//       res.redirect('/admin/products');
-//     }).catch(err =>{
-//       console.log(err);
-//     });
-
-
-
 };
-
-//   const product = new Product(null, title, imageUrl, description, price);
-//   product
-//     .save()
-//     .then(() => {
-//       res.redirect('/');
-//     })
-//     .catch(err => console.log(err));
-// };
-
-
-// exports.postAddProduct = (req, res, next) => {
-//   const title = req.body.title;
-//   const imageUrl = req.body.imageUrl;
-//   const price = req.body.price;
-//   const description = req.body.description;
-//   const product = new Product(null, title, imageUrl, description, price);
-//   product.save()
-//     .then(() => {
-//       res.redirect('/');
-//     })
-//     .catch(err => console.log(err));
-//   //product.save();
-//   //res.redirect('/');
-// };
 
 exports.getEditProduct = (req, res, next) => {
   const editMode = req.query.edit;
@@ -89,23 +48,13 @@ exports.getEditProduct = (req, res, next) => {
       return res.redirect('/');
     }
     res.render('admin/edit-product', {
+      isAuthenticated: req.session.isLoggedIn,
       pageTitle: 'Edit Product',
       path: '/admin/edit-product',
       editing: editMode,
       product: product
     });
   }).catch(err =>{console.log(err)});
-  // Product.findByPk(prodId, product => {
-  //   if (!product) {
-  //     return res.redirect('/');
-  //   }
-  //   res.render('admin/edit-product', {
-  //     pageTitle: 'Edit Product',
-  //     path: '/admin/edit-product',
-  //     editing: editMode,
-  //     product: product
-  //   });
-  // });
 };
 
 exports.postEditProduct = (req, res, next) => {
@@ -128,14 +77,13 @@ exports.postEditProduct = (req, res, next) => {
     }).catch(err =>{
      console.log(err);
    });
- 
 };
 
 exports.getProducts = (req, res, next) => {
   req.user.getProducts()
-  //Product.findAll()
   .then(products=>{
     res.render('admin/products', {
+      isAuthenticated: req.session.isLoggedIn,
       prods: products,
       pageTitle: 'Admin Products',
       path: '/admin/products'
@@ -143,15 +91,6 @@ exports.getProducts = (req, res, next) => {
   }).catch(err =>{
     console.log(err)
   });
-
-
-  // Product.fetchAll(products => {
-  //   res.render('admin/products', {
-  //     prods: products,
-  //     pageTitle: 'Admin Products',
-  //     path: '/admin/products'
-  //   });
-  // });
 };
 
 exports.postDeleteProduct = (req, res, next) => {
