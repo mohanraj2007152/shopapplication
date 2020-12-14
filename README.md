@@ -10,6 +10,9 @@ npm install
 
 npm start
 
+# Accessing the application url
+http://localhost:4200
+
 
 # added the future for this app
 1 . Added Login form
