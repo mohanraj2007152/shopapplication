@@ -12,6 +12,6 @@ http://localhost:4200
 
 # added the future for this app
 1 . Added authentication with encripted password and used validation with DB 
-2 . Added route production
-3 . Added CSRF production
-4 . Flashing the error message in UI
+2 . 
+3 . 
+4 . 
