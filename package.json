@@ -25,6 +25,7 @@
     "express-handlebars": "^3.0.0",
     "express-session": "^1.17.1",
     "express-session-sequelize": "^2.3.0",
+    "express-validator": "^6.8.0",
     "mysql2": "^2.2.5",
     "nodemailer": "^6.4.17",
     "nodemailer-sendgrid-transport": "^0.2.0",
