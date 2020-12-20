@@ -4,21 +4,43 @@ const express = require('express');
 
 const adminController = require('../controllers/admin');
 
+
+const { body } = require('express-validator');
+
 const router = express.Router();
 
-// /admin/add-product => GET
-router.get('/add-product', adminController.getAddProduct);
-
-// /admin/products => GET
+//fetch all
 router.get('/products', adminController.getProducts);
+//fetch by id
 
-// /admin/add-product => POST
-router.post('/add-product', adminController.postAddProduct);
+router.get('/product/:productId', adminController.getProductById);
+router.get('/edit-product/:productId', adminController.getProductById);
 
-router.get('/edit-product/:productId', adminController.getEditProduct);
+router.post('/product',[
+  body('title','Title min 3 char')
+    .isString()
+    .isLength({ min: 3 })
+    .trim(),
+  body('imageUrl', 'URL not valid').isURL(),
+  body('price','price not valid').isFloat(),
+  body('description','description min 3 char and max 400 char')
+    .isLength({ min: 5, max: 400 })
+    .trim()
+],adminController.createProduct);
 
-router.post('/edit-product', adminController.postEditProduct);
+router.put('/product',[
+  body('title','Title min 3 char')
+    .isString()
+    .isLength({ min: 3 })
+    .trim(),
+  body('imageUrl', 'URL not valid').isURL(),
+  body('price','price not valid').isFloat(),
+  body('description','description min 3 char and max 400 char')
+    .isLength({ min: 5, max: 400 })
+    .trim()
+], adminController.updateProduct);
 
-router.post('/delete-product', adminController.postDeleteProduct);
+router.delete('/product/:productId', adminController.deleteProduct)
+
 
 module.exports = router;

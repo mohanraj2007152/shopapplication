@@ -1,19 +1,6 @@
-// const db = require('mysql2');
-
-// const connectionPool = db.createPool({
-
-//    host:'localhost',
-//    user:'root',
-//    database:'nodedb',
-//    password:'root'
-
-
-// })
-
-
 const Sequelize = require('sequelize');
 
-const sequelize = new Sequelize('nodedb','root','root',{
+const sequelize = new Sequelize('apidb','root','root',{
    dialect:'mysql',
    host:'localhost'
 
