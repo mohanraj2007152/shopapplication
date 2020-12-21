@@ -3,6 +3,7 @@ const uuid = require('uuid')
 const { validationResult }=require('express-validator/check')
 
 exports.createProduct = (req, res, next) => {
+  console.log("@@@@@@@@@@@@@"+req.userId)
   const errors = validationResult(req);
   if (!errors.isEmpty()) {
     const error = new Error('Validation failed, entered data is incorrect.');
@@ -18,13 +19,14 @@ exports.createProduct = (req, res, next) => {
   const imageUrl = req.body.imageUrl;
   const price = req.body.price;
   const description = req.body.description;
+  const userId = req.userId;
 
-
-  req.user.createProduct({
+  Product.create({
     title: title,
     price: price,
     imageUrl: imageUrl,
-    description: description
+    description: description,
+    userId: userId
   })
   .then(result => {
     // console.log(result);
@@ -60,6 +62,12 @@ exports.updateProduct = (req, res, next) => {
     if(!product){
       res.status(500).json({ message: 'product is not found .' });
     }
+    if(product.userId !==req.userId){
+      const error = new Error('Not authorized')
+      error.statusCode=403;
+      throw error;
+
+    }
     product.title = req.body.title;
     product.price = updatedPrice;
     product.description = updatedDesc;
@@ -78,7 +86,24 @@ exports.updateProduct = (req, res, next) => {
 
 //fetch all products 
 exports.getProducts = (req, res, next) => {
-  req.user.getProducts()
+  console.log("*****************"+req.query.page)
+  const currentPage = Number(req.query.page) || 1;
+  console.log("*****************"+currentPage)
+  const perPage = 5;
+  let totalItems;
+  const userId = req.userId;
+
+  Product
+  .findAndCountAll({
+     where: {
+      userId: userId        
+     },
+     offset: currentPage,
+     limit: perPage
+  })
+
+
+ // req.user.getProducts()
   .then(products=>{
     res.status(200)
     .json({ message: 'Fetched Products successfully.', products: products });
@@ -117,12 +142,16 @@ exports.getProductById = (req, res, next) => {
 exports.deleteProduct = (req, res, next) => {
   const prodId = req.params.productId;
   Product.findByPk(prodId).then(product =>{
+
+    if(product.userId !==req.userId){
+      const error = new Error('Not authorized')
+      error.statusCode=403;
+      throw error;
+
+    }
     return product.destroy();
   })
-  // .then(result =>{
-  //   console.log("product is deleted");
-  //   res.redirect('/admin/products');
-  // })
+  
   .then(() => {
     res.status(200).json({ message: 'DESTROYED PRODUCT Success!' });
   })
