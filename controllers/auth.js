@@ -16,13 +16,15 @@ exports.signup = (req, res, next) => {
   const email = req.body.email;
   const name = req.body.name;
   const password = req.body.password;
+  const status = "New User for the application";
   
   bcrypt.hash(password,12)
       .then(encriptPassword =>{
         const user = new User({
           name :name,
           password :encriptPassword,
-          email :email
+          email :email,
+          status : status
         })
         return user.save();
   
@@ -77,3 +79,40 @@ exports.login = (req, res, next) => {
       next(err);
     });
 };
+
+
+
+
+  exports.getUserStatus= (req, res, next) => {
+       User.findByPk(req.userId).then(user=>{
+         if(!user){
+           const error = new Error('User Not Found')
+           error.statusCode=403;
+           throw error;
+         }
+         console.log(user.status);
+         res.status(200).json({status:user.status});
+       }).catch(err => {
+         res.status(500).json({ message: 'User Not Found.' });
+       });
+    
+     }
+
+     exports.updateUserStatus= (req, res, next) => {
+      const updateStatus = req.body.status;
+      console.log('updatestatus   ' +updateStatus);
+      User.findByPk(req.userId).then(user=>{
+        if(!user){
+          const error = new Error('User Not Found')
+          error.statusCode=403;
+          throw error;
+        }
+        user.status = updateStatus;
+        user.save();
+        console.log(user.status);
+        res.status(200).json({status:user.status});
+      }).catch(err => {
+        res.status(500).json({ message: 'User Not Found.' });
+      });
+   
+    }

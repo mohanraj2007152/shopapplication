@@ -4,7 +4,7 @@
 
     host:'localhost',
     user:'root',
-    database:'apidb',
+    database:'productdb',
     password:'root'
 
 

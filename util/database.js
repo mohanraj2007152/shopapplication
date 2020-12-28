@@ -1,6 +1,6 @@
 const Sequelize = require('sequelize');
 
-const sequelize = new Sequelize('apidb','root','root',{
+const sequelize = new Sequelize('productdb','root','root',{
    dialect:'mysql',
    host:'localhost'
 

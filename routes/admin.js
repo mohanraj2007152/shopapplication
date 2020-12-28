@@ -18,28 +18,18 @@ router.get('/product/:productId',isAuth, adminController.getProductById);
 router.get('/edit-product/:productId',isAuth, adminController.getProductById);
 
 router.post('/product',[
-  body('title','Title min 3 char')
+  body('title','Title min 2 char')
     .isString()
-    .isLength({ min: 3 })
+    .isLength({ min: 2 })
     .trim(),
-  body('imageUrl', 'URL not valid').isURL(),
+  //body('image', 'URL not valid').isString(),
   body('price','price not valid').isFloat(),
-  body('description','description min 3 char and max 400 char')
+  body('content','content min 5 char and max 400 char')
     .isLength({ min: 5, max: 400 })
     .trim()
 ], isAuth, adminController.createProduct);
 
-router.put('/product',[
-  body('title','Title min 3 char')
-    .isString()
-    .isLength({ min: 3 })
-    .trim(),
-  body('imageUrl', 'URL not valid').isURL(),
-  body('price','price not valid').isFloat(),
-  body('description','description min 3 char and max 400 char')
-    .isLength({ min: 5, max: 400 })
-    .trim()
-], isAuth, adminController.updateProduct);
+router.put('/product', isAuth, adminController.updateProduct);
 
 router.delete('/product/:productId', isAuth, adminController.deleteProduct)
 
